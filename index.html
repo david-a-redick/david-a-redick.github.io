@@ -1,1 +1,159 @@
-Hello World!
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>redick.me</title>
+		<script>
+// JavaScript and HTML Copyright 2022 - David A. Redick
+// Released under the terms of the GNU AGPL v3.
+
+
+// max line length for lowest phone resolution.
+const max_line = '0123456789012345678901234567890123456789';
+const max_line_length = max_line.length;
+
+
+function word_wrap (in_text) {
+	let data = Array.from(in_text);
+
+	// width of line so far.
+	let width = 0;
+
+	// the index of the last tab or space scanned.
+	let index_last_space = -1;
+
+	for (let i = 0; i < data.length; i++) {
+		let c = data[i];
+
+		if (' ' == c || '\t' == c) {
+			index_last_space = i;
+		} else if('\n' == c) {
+			width = 0;
+			index_last_space = -1;
+		} else {
+			width++;
+		}
+
+
+		if(width > max_line_length) {
+			if(index_last_space >= 0) {
+				// insert \n just after last space
+				data.splice(index_last_space+1, 0, '\n');
+				// next time through i == index of \n
+				i = index_last_space;
+			} else {
+				// insert \n just before i
+				data.splice(i, 0, '\n');
+				// next time through i == index of \n
+				i--;
+			}
+		}
+	}
+
+	// the block of text post-processed
+	let out_text = data.join('');
+	return out_text;
+}
+
+
+// word porn from various sources.
+const lines = [
+	'What about Bob?',
+	'I have no mouth and I must scream.',
+	'O, Draconian devil. Oh, lame saint.',
+	'Repent, Harlequin!'
+];
+
+lines.forEach((line, index, arr) => {
+	lines[index] = word_wrap(line);
+});
+
+
+// menu text content.
+const menu = {
+	about: word_wrap(''),
+	contact: word_wrap(''),
+	videos: word_wrap('')
+};
+
+
+// type writer style manager object.
+const typer = {
+	state: null,
+	interval_id: null,
+
+	// the text being display with word wrap alterations.
+	text: null,
+	target_line_index: null,
+	char_index: null,
+	done_count: null,
+
+	handle_timer() {
+		if (null == this.state) {
+			// first fire
+			this.state = 'typing';
+			this.text = '';
+			this.target_line_index = Math.floor(Math.random() * lines.length);
+			this.char_index = 0;
+			this.done_count = 0;
+		} else if ('typing' == this.state) {
+			let target_text = lines[this.target_line_index];
+			this.text = this.text + target_text[this.char_index];
+			this.char_index++;
+			if (this.char_index >= target_text.length) {
+				this.state = 'done';
+			}
+		} else if ('done' == this.state) {
+			// show the completed text for a while.
+			this.done_count++;
+			if (this.done_count >= 6) {
+				// reset.
+				this.state = null;
+			}
+		}
+
+		return this.text;
+	}
+};
+
+function do_onload() {
+	const delay_milliseconds = 400;
+
+	const type_here = document.getElementById('type_here');
+
+	typer.interval_id = setInterval(() => {
+		const text_to_display = typer.handle_timer(delay_milliseconds);
+		type_here.innerText = text_to_display;
+	}, delay_milliseconds);
+}
+		</script>
+		<meta name="description" content="">
+        </head>
+        <body onload="do_onload()" bgcolor="black" color="white" vlink="white" alink="white">
+		<div style="font-family:monospace; color:white" id="title">
+			i am a trigger warning<br/>
+			i am the trigger
+		</div>
+		<br/>
+		<div style="font-family:monospace; color:white" id="menu">
+			<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/"><img alt="David Redick's Art Work is released under the CC BY NC ND License, unless noted otherwise." src="CC-BY-NC-ND-88x31.png"/></a>
+			<br/>
+			<br/>
+			<a href="" onclick="typer.foo()" >about</a> | <a href="">contact</a> | <a href="">videos</a>
+		</div>
+		<br/>
+		<noscript>
+<!--
+0123456789012345678901234567890123456789
+-->
+			<pre>
+About:
+
+Contact:
+
+Videos:
+			</pre>
+		</noscript>
+		<pre style="font-family:monospace; color:white" id="type_here">
+		</pre>
+	</body>
+</html>
